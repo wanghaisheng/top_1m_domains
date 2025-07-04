@@ -6,6 +6,7 @@ on:
       - main
   schedule:
     - cron: '0 12 * * *'  # 每天 UTC 时间中午 12 点（北京时间 20:00）
+  workflow_dispatch:      # 允许手动触发
 
 jobs:
   build:
