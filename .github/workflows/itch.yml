@@ -41,15 +41,12 @@ jobs:
     # --- Majestic ---
     - name: Download Majestic
       run: |
-        wget https://downloads.majestic.com/majestic_million.csv -O top-1m.csv
-        zip majestic.zip top-1m.csv
-        rm top-1m.csv
+        wget https://downloads.majestic.com/majestic_million.csv -O majestic.csv
 
     - name: Extract .itch.io from Majestic
       run: |
-        unzip -o majestic.zip
-        grep -i '\.itch\.io' top-1m.csv > itch/majestic_itchio_${{ steps.date.outputs.date }}.csv
-        rm top-1m.csv
+        grep -i '\.itch\.io' majestic.csv > itch/majestic_itchio_${{ steps.date.outputs.date }}.csv
+        rm majestic.csv
 
     # --- DomCop ---
     - name: Download DomCop
