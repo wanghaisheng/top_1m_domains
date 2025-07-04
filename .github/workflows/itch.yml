@@ -1,0 +1,84 @@
+name: Daily Update .itch.io Domains
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 12 * * *'  # 每天 UTC 时间中午 12 点（北京时间 20:00）
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Set DATE variable
+      id: date
+      run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+
+    - name: Create output folder
+      run: mkdir -p itch
+
+    # --- Cisco Umbrella ---
+    - name: Download Cisco Umbrella
+      run: wget https://s3-us-west-1.amazonaws.com/umbrella-static/top-1m.csv.zip -O umbrella.zip
+
+    - name: Extract .itch.io from Umbrella
+      run: |
+        unzip -o umbrella.zip
+        grep -i '\.itch\.io' top-1m.csv > itch/umbrella_itchio_${{ steps.date.outputs.date }}.csv
+        rm top-1m.csv
+
+    # --- Majestic ---
+    - name: Download Majestic
+      run: |
+        wget https://downloads.majestic.com/majestic_million.csv -O top-1m.csv
+        zip majestic.zip top-1m.csv
+        rm top-1m.csv
+
+    - name: Extract .itch.io from Majestic
+      run: |
+        unzip -o majestic.zip
+        grep -i '\.itch\.io' top-1m.csv > itch/majestic_itchio_${{ steps.date.outputs.date }}.csv
+        rm top-1m.csv
+
+    # --- DomCop ---
+    - name: Download DomCop
+      run: wget https://www.domcop.com/files/top/top10milliondomains.csv.zip -O domcop.zip
+
+    - name: Extract .itch.io from DomCop
+      run: |
+        unzip -o domcop.zip
+        grep -i '\.itch\.io' *.csv > itch/domcop_itchio_${{ steps.date.outputs.date }}.csv
+        rm *.csv
+
+    # --- Tranco ---
+    - name: Download Tranco
+      run: wget https://tranco-list.eu/top-1m.csv.zip -O tranco.zip
+
+    - name: Extract .itch.io from Tranco
+      run: |
+        unzip -o tranco.zip
+        grep -i '\.itch\.io' top-1m.csv > itch/tranco_itchio_${{ steps.date.outputs.date }}.csv
+        rm top-1m.csv
+
+    # --- Commit and Push changes ---
+    - name: Commit and Push changes
+      run: |
+        echo ${{ steps.date.outputs.date }} > date.txt
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add itch/*.csv date.txt
+        if git diff --cached --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Update .itch.io domains on ${{ steps.date.outputs.date }}"
+          git push
