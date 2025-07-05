@@ -43,7 +43,7 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add itch/*.csv 
+        git add itch/*.csv
         if git diff --cached --quiet; then
           echo "No changes to commit"
         else
