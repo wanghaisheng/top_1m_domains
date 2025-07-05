@@ -1,0 +1,52 @@
+name: Daily Update .itch.io Domains
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 12 * * *'  # 每天 UTC 时间中午 12 点（北京时间 20:00）
+  workflow_dispatch:      # 允许手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Set DATE variable
+      id: date
+      run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+
+    - name: Create output folder
+      run: mkdir -p itch
+
+
+    # --- Tranco ---
+    - name: Download Tranco
+      run: wget https://tranco-list.eu/download/NN7XW/full -O top-1m.csv
+
+    - name: Extract .itch.io from Tranco
+      run: |
+        grep -i '\.itch\.io' top-1m.csv > itch/tranco_itchio_${{ steps.date.outputs.date }}.csv
+        rm top-1m.csv
+
+    # --- Commit and Push changes ---
+    - name: Commit and Push changes
+      run: |
+        echo ${{ steps.date.outputs.date }} > date.txt
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add itch/*.csv date.txt
+        if git diff --cached --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Update .itch.io domains on ${{ steps.date.outputs.date }}"
+          git push
