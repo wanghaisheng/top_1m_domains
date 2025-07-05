@@ -41,10 +41,9 @@ jobs:
     # --- Commit and Push changes ---
     - name: Commit and Push changes
       run: |
-        echo ${{ steps.date.outputs.date }} > date.txt
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add itch/*.csv date.txt
+        git add itch/*.csv 
         if git diff --cached --quiet; then
           echo "No changes to commit"
         else
