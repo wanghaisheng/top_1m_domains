@@ -23,7 +23,7 @@ jobs:
 
     - name: Set DATE variable
       id: date
-      run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+      run: echo "date=$(date +'%Y%m%d')" >> "$GITHUB_OUTPUT"
 
     - name: Create output folder
       run: mkdir -p itch
